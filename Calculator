@@ -1,1 +1,262 @@
+package calculator;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class CalculatorGUI extends JFrame {
+
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private JTextField display;
+    private JButton onButton, offButton, clearButton, deleteButton, squareButton, noButton;
+    private JButton[] numberButtons, operatorButtons;
+    private boolean isOn = false;
+    private double firstNumber, secondNumber;
+    private String operator;
+
+    public CalculatorGUI() {
+        super("Calculator");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(428, 500); // Increased frame size
+        setLocationRelativeTo(null);
+        setResizable(false);
+        getContentPane().setLayout(new BorderLayout());
+
+        // Create a separate panel for the display
+        JPanel displayPanel = new JPanel();
+        displayPanel.setLayout(new BorderLayout());
+        display = new JTextField();
+        display.setHorizontalAlignment(JTextField.RIGHT);
+        display.setFont(new Font("Dialog", Font.BOLD, 20));
+        display.setPreferredSize(new Dimension(400, 50)); // Set preferred size for display
+        display.setBackground(Color.WHITE);
+        display.setOpaque(true);
+        display.setEditable(false); // Set editable to false initially
+        displayPanel.add(display, BorderLayout.CENTER);
+        getContentPane().add(displayPanel, BorderLayout.NORTH);
+
+        // Create a separate panel for the buttons
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BorderLayout());
+
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        onButton = new JButton("ON");
+        onButton.setFont(new Font("Dialog", Font.BOLD, 20));
+        onButton.addActionListener(new OnButtonListener());
+        topPanel.add(onButton);
+
+        offButton = new JButton("OFF");
+        offButton.setFont(new Font("Dialog", Font.BOLD, 20));
+        offButton.addActionListener(new OffButtonListener());
+        topPanel.add(offButton);
+
+        clearButton = new JButton("C");
+        clearButton.setFont(new Font("Dialog", Font.BOLD, 20));
+        clearButton.addActionListener(new ClearButtonListener());
+        topPanel.add(clearButton);
+
+        deleteButton = new JButton("DEL");
+        deleteButton.setFont(new Font("Dialog", Font.BOLD, 20));
+        deleteButton.addActionListener(new DeleteButtonListener());
+        topPanel.add(deleteButton);
+        
+        squareButton = new JButton("x²");
+        squareButton.setFont(new Font("Dialog", Font.BOLD, 20));
+        squareButton.addActionListener(new OperatorButtonListener());
+        topPanel.add(squareButton);
+        
+        noButton = new JButton("1/x");
+        noButton.setFont(new Font("Dialog", Font.BOLD, 20));
+        noButton.addActionListener(new OperatorButtonListener());
+        topPanel.add(noButton);
+       
+
+        buttonPanel.add(topPanel, BorderLayout.NORTH);
+
+        JPanel numberPanel = new JPanel(new GridLayout(4, 3, 5, 5));
+        numberButtons = new JButton[12];
+        char[] numbers = {'7', '8', '9', '4', '5', '6', '1', '2', '3', '0', '.', '='};
+        for (int i = 0; i < 12; i++) {
+            numberButtons[i] = new JButton(String.valueOf(numbers[i]));
+            numberButtons[i].setFont(new Font("Dialog", Font.BOLD, 20));
+            numberButtons[i].setPreferredSize(new Dimension(80, 40)); // Increased button size
+            numberButtons[i].addActionListener(new NumberButtonListener());
+            numberPanel.add(numberButtons[i]);
+        }
+
+        buttonPanel.add(numberPanel, BorderLayout.CENTER);
+
+        JPanel operatorPanel = new JPanel(new GridLayout(4, 3, 5, 5));
+        operatorButtons = new JButton[] {
+               
+                new JButton("/"),
+                new JButton("X"),
+                new JButton("-"),
+                new JButton("+")
+        };
+
+        for (JButton button : operatorButtons) {
+            button.setFont(new Font("Dialog", Font.BOLD, 20));
+            button.addActionListener(new OperatorButtonListener());
+            operatorPanel.add(button);
+        }
+
+        buttonPanel.add(operatorPanel, BorderLayout.EAST);
+
+        getContentPane().add(buttonPanel, BorderLayout.CENTER);
+        setVisible(true);
+        onButton.setEnabled(true);
+        offButton.setEnabled(false);
+    }
+
+    private class NumberButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (isOn) {
+                JButton button = (JButton) e.getSource();
+                String number = button.getText();
+                if ("=".equals(number)) {
+                    performOperation();
+                } else {
+                    display.setText(display.getText() + number);
+                }
+            }
+        }
+    }
+
+    private class OnButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            isOn = true;
+            display.setEditable(true); // Set editable to true
+            display.requestFocusInWindow(); // Request focus on the display field
+            display.setBackground(Color.WHITE);
+            clearButton.setEnabled(true);
+            noButton.setEnabled(true);
+            squareButton.setEnabled(true);
+            deleteButton.setEnabled(true);
+            for (JButton button : numberButtons) {
+                button.setEnabled(true);
+            }
+            for (JButton button : operatorButtons) {
+                button.setEnabled(true);
+            }
+            onButton.setEnabled(false);
+            offButton.setEnabled(true);
+        }
+    }
+
+    private class OffButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            isOn = false;
+            display.setEditable(false); // Set editable to false
+            display.setText("");
+            display.setBackground(new Color(240, 240, 240));
+            clearButton.setEnabled(false);
+            noButton.setEnabled(false);
+            squareButton.setEnabled(false);
+            deleteButton.setEnabled(false);
+            for (JButton button : numberButtons) {
+                button.setEnabled(false);
+            }
+            for (JButton button : operatorButtons) {
+                button.setEnabled(false);
+            }
+            onButton.setEnabled(true);
+            offButton.setEnabled(false);
+        }
+    }
+
+    private class ClearButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            display.setText("");
+            firstNumber = 0;
+            secondNumber = 0;
+            operator = null;
+        }
+    }
+
+    private class DeleteButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String currentText = display.getText();
+            if (currentText.length() > 0) {
+                display.setText(currentText.substring(0, currentText.length() - 1));
+            }
+        }
+    }
+
+    private class OperatorButtonListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (isOn) {
+                JButton button = (JButton) e.getSource();
+                String operation = button.getText();
+
+                if (!display.getText().isEmpty()) {
+                    firstNumber = Double.parseDouble(display.getText());
+                    display.setText("");
+                    operator = operation;
+
+                    if (operation.equals("=")) {
+                        performOperation();
+                    }
+                }
+            }
+        }
+    }
+
+    private void performOperation() {
+        secondNumber = Double.parseDouble(display.getText());
+        double result = 0;
+
+        switch (operator) {
+            case "+":
+                result = firstNumber + secondNumber;
+                break;
+            case "-":
+                result = firstNumber - secondNumber;
+                break;
+            case "X":
+                result = firstNumber * secondNumber;
+                break;
+            case "/":
+                if (secondNumber!= 0) {
+                    result = firstNumber / secondNumber;
+                } else {
+                    display.setText("Error: Division by zero");
+                    return;
+                }
+                break;
+            case "√":
+                result = Math.sqrt(firstNumber);
+                break;
+            case "x²":
+                result = Math.pow(firstNumber, 2);
+                break;
+            case "1/x":
+                if (firstNumber!= 0) {
+                    result = 1 / firstNumber;
+                } else {
+                    display.setText("Error: Division by zero");
+                    return;
+                }
+                break;
+        }
+
+        display.setText(String.valueOf(result));
+        firstNumber = 0;
+        secondNumber = 0;
+        operator = null;
+    }
+
+    public static void main(String[] args) {
+        new CalculatorGUI();
+    }
+}
